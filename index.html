@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code Skills Catalog</title>
+<style>
+:root {
+  --bg: #f5f5f7;
+  --bg-card: rgba(255,255,255,0.72);
+  --bg-card-hover: rgba(255,255,255,0.92);
+  --text: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: #6e6e73;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --border: rgba(0,0,0,0.08);
+  --shadow: 0 4px 24px rgba(0,0,0,0.06);
+  --shadow-hover: 0 12px 40px rgba(0,0,0,0.12);
+  --glass: blur(20px) saturate(180%);
+  --gradient-1: #667eea;
+  --gradient-2: #764ba2;
+  --gradient-3: #f093fb;
+  --gradient-4: #4facfe;
+  --tag-research: #ff6b6b;
+  --tag-dev: #51cf66;
+  --tag-video: #339af0;
+  --tag-writing: #fcc419;
+  --tag-tool: #845ef7;
+  --tag-science: #20c997;
+  --tag-other: #868e96;
+  --modal-bg: rgba(255,255,255,0.96);
+  --card-radius: 16px;
+  --transition: 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+[data-theme="dark"] {
+  --bg: #000;
+  --bg-card: rgba(28,28,30,0.72);
+  --bg-card-hover: rgba(44,44,46,0.92);
+  --text: #f5f5f7;
+  --text-secondary: #98989d;
+  --text-tertiary: #86868b;
+  --border: rgba(255,255,255,0.12);
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-hover: 0 12px 40px rgba(0,0,0,0.5);
+  --modal-bg: rgba(28,28,30,0.98);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+#particleCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1; pointer-events: none;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  background: transparent;
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  transition: background var(--transition), color var(--transition);
+  overflow-x: hidden;
+}
+html { background: var(--bg); transition: background var(--transition); }
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 30% 20%, rgba(102,126,234,0.04) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, rgba(244,114,182,0.03) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 80%, rgba(79,172,254,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -2;
+  transition: opacity var(--transition);
+}
+[data-theme="dark"] body::before { opacity: 0.25; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+.header {
+  text-align: center;
+  padding: 80px 0 40px;
+  animation: fadeInUp 0.8s ease;
+}
+.header-icon {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+  border-radius: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(102,126,234,0.3);
+}
+.header h1 {
+  font-size: 48px; font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #1d1d1f 0%, #1d1d1f 60%, #636366 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+[data-theme="dark"] .header h1 {
+  background: linear-gradient(135deg, #f5f5f7 0%, #f5f5f7 60%, #98989d 100%);
+  -webkit-background-clip: text;
+}
+.header p {
+  font-size: 20px; color: var(--text-secondary);
+  font-weight: 400; max-width: 600px; margin: 0 auto;
+}
+
+.stats-bar {
+  display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;
+  padding: 20px 0 40px;
+  animation: fadeInUp 0.8s ease 0.15s both;
+}
+.stat {
+  background: var(--bg-card); backdrop-filter: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 16px 28px;
+  text-align: center;
+  transition: all var(--transition);
+}
+.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.stat-num { font-size: 36px; font-weight: 700; letter-spacing: -1px; }
+.stat-label { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+.stat:nth-child(1) .stat-num { color: #667eea; }
+.stat:nth-child(2) .stat-num { color: #4facfe; }
+.stat:nth-child(3) .stat-num { color: #f093fb; }
+.stat:nth-child(4) .stat-num { color: #20c997; }
+.stat:nth-child(5) .stat-num { color: #fcc419; }
+
+.controls {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 24px; position: sticky; top: 16px; z-index: 100;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+.search-wrap {
+  flex: 1; min-width: 200px; position: relative;
+}
+.search-wrap input {
+  width: 100%; padding: 14px 20px 14px 48px;
+  border-radius: 100px; border: 1px solid var(--border);
+  background: var(--bg-card); backdrop-filter: var(--glass);
+  font-size: 16px; color: var(--text);
+  transition: all var(--transition);
+  outline: none;
+}
+.search-wrap input:focus { box-shadow: 0 0 0 4px rgba(0,113,227,0.15); border-color: var(--accent); }
+.search-icon {
+  position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
+  color: var(--text-tertiary); font-size: 18px;
+}
+.theme-toggle {
+  width: 44px; height: 44px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg-card); backdrop-filter: var(--glass);
+  cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.theme-toggle:hover { box-shadow: var(--shadow); }
+
+.categories {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px;
+  animation: fadeInUp 0.8s ease 0.4s both;
+}
+.cat-btn {
+  padding: 8px 18px; border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg-card); backdrop-filter: var(--glass);
+  cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--text-secondary);
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.cat-btn:hover { color: var(--text); border-color: var(--accent); }
+.cat-btn.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.cat-count { font-size: 11px; opacity: 0.7; }
+
+.skills-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px; margin-bottom: 60px;
+}
+.skill-card {
+  background: var(--bg-card); backdrop-filter: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: var(--card-radius);
+  padding: 20px 24px;
+  cursor: pointer;
+  transition: all var(--transition);
+  animation: fadeInUp 0.6s ease both;
+  position: relative; overflow: hidden;
+}
+.skill-card::before {
+  content: ''; position: absolute; inset: 0;
+  border-radius: var(--card-radius);
+  opacity: 0; transition: opacity var(--transition);
+  z-index: 0;
+}
+.skill-card:hover::before { opacity: 1; }
+.skill-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  background: var(--bg-card-hover);
+}
+.skill-card:active { transform: scale(0.98); }
+.skill-card > * { position: relative; z-index: 1; }
+.skill-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 8px;
+}
+.skill-name {
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.skill-tag {
+  font-size: 11px; font-weight: 500; padding: 3px 10px;
+  border-radius: 100px; white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+.tag-research { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+.tag-dev { background: rgba(81,207,102,0.12); color: #40c057; }
+.tag-video { background: rgba(51,154,240,0.12); color: #339af0; }
+.tag-writing { background: rgba(252,196,25,0.12); color: #e6a800; }
+.tag-tool { background: rgba(132,94,247,0.12); color: #7950f2; }
+.tag-science { background: rgba(32,201,151,0.12); color: #12b886; }
+.tag-other { background: rgba(134,142,150,0.12); color: #868e96; }
+.skill-desc {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.5; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.skill-invoke {
+  margin-top: 10px; font-size: 12px; color: var(--text-tertiary);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: rgba(0,0,0,0.04); border-radius: 6px;
+  padding: 4px 8px; display: inline-block;
+}
+[data-theme="dark"] .skill-invoke { background: rgba(255,255,255,0.06); }
+
+.empty-state {
+  grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+  color: var(--text-secondary);
+  animation: fadeInUp 0.5s ease;
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-size: 20px; margin-bottom: 8px; color: var(--text); }
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.2s ease;
+  padding: 20px;
+}
+.modal {
+  background: var(--modal-bg); backdrop-filter: blur(40px);
+  border-radius: 24px; max-width: 640px; width: 100%; max-height: 80vh;
+  overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.24);
+  animation: scaleIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.modal-header {
+  padding: 28px 32px 0; display: flex; align-items: flex-start;
+  justify-content: space-between; position: sticky; top: 0;
+  background: var(--modal-bg); backdrop-filter: blur(40px);
+  z-index: 1; border-radius: 24px 24px 0 0;
+}
+.modal-title { font-size: 24px; font-weight: 700; letter-spacing: -0.3px; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 100px;
+  border: none; background: rgba(128,128,128,0.15);
+  cursor: pointer; font-size: 16px; display: flex;
+  align-items: center; justify-content: center;
+  transition: all var(--transition); color: var(--text);
+  flex-shrink: 0;
+}
+.modal-close:hover { background: rgba(128,128,128,0.25); }
+.modal-body { padding: 24px 32px 32px; }
+.modal-section { margin-bottom: 20px; }
+.modal-section:last-child { margin-bottom: 0; }
+.modal-section h4 {
+  font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-tertiary); margin-bottom: 8px; font-weight: 600;
+}
+.modal-section p, .modal-section li { font-size: 15px; color: var(--text-secondary); line-height: 1.7; }
+.modal-section ul { padding-left: 20px; }
+.modal-section code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 13px; background: rgba(0,0,0,0.05);
+  padding: 2px 6px; border-radius: 4px;
+}
+[data-theme="dark"] .modal-section code { background: rgba(255,255,255,0.1); }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.footer {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-tertiary); font-size: 13px;
+  border-top: 1px solid var(--border);
+}
+.footer a { color: var(--accent); text-decoration: none; }
+
+@media (max-width: 768px) {
+  .header h1 { font-size: 32px; }
+  .skills-grid { grid-template-columns: 1fr; }
+  .stats-bar { gap: 12px; }
+  .stat { padding: 12px 18px; }
+  .stat-num { font-size: 28px; }
+  .controls { flex-direction: column; }
+  .search-wrap { width: 100%; }
+  .modal { margin: 10px; border-radius: 20px; }
+  .modal-header, .modal-body { padding-left: 20px; padding-right: 20px; }
+}
+</style>
+</head>
+<body>
+<canvas id="particleCanvas"></canvas>
+<div class="container">
+  <header class="header">
+    <div class="header-icon">&#x2699;</div>
+    <h1>Claude Code Skills</h1>
+    <p>完整的可交互技能目录 — 浏览、搜索、了解每个技能的用法</p>
+  </header>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">&#x1F50D;</span>
+      <input type="text" id="searchInput" placeholder="搜索技能名称、描述、用途...">
+    </div>
+    <button class="theme-toggle" id="themeToggle" title="切换深色模式">&#x263E;</button>
+  </div>
+
+  <div class="categories" id="categoryFilters"></div>
+  <div class="skills-grid" id="skillsGrid"></div>
+
+  <footer class="footer">
+    Claude Code Skills Catalog · 共 <span id="totalCount">0</span> 个技能 · 生成于 2026-05-24
+  </footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal"></div>
+</div>
+
+<script>
+const skills = [
+  // ===== ACADEMIC RESEARCH =====
+  {
+    name: "academic-paper",
+    category: "academic",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "12-agent 学术论文写作流水线。10 种模式（全文/计划/大纲/修订/摘要/文献综述/格式转换/引用检查/披露声明），6 种论文类型，5 种引用格式。支持中英双语摘要，输出 LaTeX/DOCX/PDF。",
+    usage: "写学术论文、修订稿件、文献综述、格式转换、引用检查",
+    solve: "解决学术写作全流程痛点，从构思到定稿一站式完成，包含写作质量检查与 AI 反模式标注",
+    invoke: "/academic-paper",
+    modes: "full / plan / outline / revision / revision-coach / abstract / lit-review / format-convert / citation-check / disclosure"
+  },
+  {
+    name: "academic-paper-reviewer",
+    category: "academic",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "专业学术论文审稿与评价。模拟同行评审流程，提供结构化审稿意见，包括方法论评估、论证逻辑检查、数据可靠性分析。",
+    usage: "审阅论文稿件、回复审稿意见、投稿前自审",
+    solve: "提供高质量的结构化审稿意见，帮助提升投稿成功率，快速理解审稿人的关注点",
+    invoke: "/academic-paper-reviewer"
+  },
+  {
+    name: "academic-pipeline",
+    category: "academic",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "学术研究工作流管线，将研究过程系统化：从选题、文献调研、实验设计到论文写作的端到端研究流程管理。",
+    usage: "规划研究项目、系统化文献调研、实验设计辅助",
+    solve: "解决研究过程碎片化问题，提供结构化的研究管理框架",
+    invoke: "/academic-pipeline"
+  },
+  {
+    name: "deep-research",
+    category: "academic",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "全局深度研究 agent 团队。13-agent 流水线，7 种模式：完整研究/快速简报/论文审阅/文献综述/事实核查/苏格拉底引导式研究对话/系统综述与可选元分析。",
+    usage: "深度研究、文献综述、系统综述、事实核查、元分析",
+    solve: "将数周的研究工作压缩至数小时，遵循 PRISMA 等学术标准，自动进行交叉验证和偏倚风险评估",
+    invoke: "/deep-research",
+    modes: "full research / quick brief / paper review / lit-review / fact-check / Socratic guided research / systematic review with meta-analysis"
+  },
+
+  // ===== SUPER POWERS =====
+  {
+    name: "using-superpowers",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "Superpowers 工作流入门。建立技能发现与使用体系，在回复任何内容之前先调用 Skill 工具。",
+    usage: "开始任何对话时自动触发",
+    solve: "确保所有对话都优先使用已有技能，避免重复造轮子",
+    invoke: "/using-superpowers"
+  },
+  {
+    name: "brainstorming",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "在创建功能、构建组件、添加功能或修改行为之前进行需求头脑风暴。探索用户意图、需求和设计。",
+    usage: "写代码之前先做需求分析",
+    solve: "避免理解偏差导致返工，提前对齐需求与方案",
+    invoke: "/brainstorming"
+  },
+  {
+    name: "writing-plans",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "将需求/规格说明转化为多步骤实施计划。在动手编码之前完成架构设计。",
+    usage: "有需求规格后进行实施规划",
+    solve: "将模糊需求转化为可执行步骤，避免边写边改的低效开发",
+    invoke: "/writing-plans"
+  },
+  {
+    name: "executing-plans",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "按书面实施计划执行，在独立会话中完成带审查检查点的开发任务。",
+    usage: "有已编写的实施计划时",
+    solve: "分步执行复杂任务，每个检查点可验证、可回退",
+    invoke: "/executing-plans"
+  },
+  {
+    name: "test-driven-development",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "实现任何功能或 bug 修复前，先进行 TDD 红/绿/重构循环。先写测试，再写代码。",
+    usage: "任何功能实现或 bug 修复前",
+    solve: "先测试后代码，确保实现正确性，减少回归 bug",
+    invoke: "/test-driven-development"
+  },
+  {
+    name: "systematic-debugging",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "遇到 bug、测试失败或意外行为时，在提出修复之前进行系统化调试。",
+    usage: "遇到任何 bug、测试失败",
+    solve: "避免盲目猜测修复，通过系统化分析快速定位根因",
+    invoke: "/systematic-debugging"
+  },
+  {
+    name: "subagent-driven-development",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "在当前会话中执行包含独立任务的实施计划时使用子 Agent 协作。",
+    usage: "实施计划中有多个独立任务时",
+    solve: "并行处理独立任务，提高复杂项目的开发效率",
+    invoke: "/subagent-driven-development"
+  },
+  {
+    name: "dispatching-parallel-agents",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "面对 2 个以上互不依赖的任务时可以并行执行。",
+    usage: "2+ 独立任务，无共享状态或顺序依赖",
+    solve: "充分利用并行能力，大幅缩短多任务处理时间",
+    invoke: "/dispatching-parallel-agents"
+  },
+  {
+    name: "requesting-code-review",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "完成任务、实现重要功能或合并前，请求代码审查以验证工作是否满足需求。",
+    usage: "功能完成、准备合并时",
+    solve: "提交前进行系统化自审，减少 PR 往返修改",
+    invoke: "/requesting-code-review"
+  },
+  {
+    name: "receiving-code-review",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "收到代码审查反馈时，先进行技术严谨性检查，再实施建议。避免盲目接受。",
+    usage: "收到 PR 审查意见时",
+    solve: "过滤出有实质价值的建议，避免引入新问题",
+    invoke: "/receiving-code-review"
+  },
+  {
+    name: "verification-before-completion",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "在声称工作完成、修复完毕或测试通过前，运行验证命令并确认输出。先验证，再断言。",
+    usage: "声称任何工作完成前",
+    solve: "避免虚假断言，用证据代替猜测",
+    invoke: "/verification-before-completion"
+  },
+  {
+    name: "finishing-a-development-branch",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "实现完成、测试全部通过后，引导分支收尾工作：合并、PR 或清理。",
+    usage: "开发完成、所有测试通过后",
+    solve: "规范化分支收尾流程，避免遗留清理不彻底",
+    invoke: "/finishing-a-development-branch"
+  },
+  {
+    name: "using-git-worktrees",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "启动需要隔离工作的 feature 或执行实施计划前，确保有独立的工作空间。",
+    usage: "需要工作空间隔离时",
+    solve: "避免当前工作区被污染，支持多任务并行开发",
+    invoke: "/using-git-worktrees"
+  },
+  {
+    name: "writing-skills",
+    category: "superpowers",
+    tag: "dev",
+    tagLabel: "开发工作流",
+    desc: "创建新的 Agent Skill、编辑已有 Skill 或在部署前验证 Skill 是否正常工作。",
+    usage: "创建/编辑自定义技能时",
+    solve: "标准化的技能编写流程，确保技能质量和可用性",
+    invoke: "/writing-skills"
+  },
+
+  // ===== HYPERFRAMES =====
+  {
+    name: "hyperframes",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "视频组合与动画制作引擎。创建场景过渡、文字动画、音视频合成、关键帧编辑等全流程视频内容。",
+    usage: "构建 HTML 视频内容、添加字幕/标题、创建动画过渡",
+    solve: "用代码创作高质量视频，实现程序化的视频生产流程",
+    invoke: "/hyperframes"
+  },
+  {
+    name: "hyperframes-cli",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "HyperFrames CLI 开发工具链。脚手架搭建、验证、预览、渲染和环境问题诊断。",
+    usage: "运行 npx hyperframes 命令进行初始化、验证、预览、渲染",
+    solve: "提供完整的本地开发环境，从创建到渲染一键完成",
+    invoke: "/hyperframes-cli"
+  },
+  {
+    name: "hyperframes-media",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "素材预处理工具：文字转语音（Kokoro TTS）、音视频转写（Whisper）、背景移除（u2net）。",
+    usage: "生成旁白语音、转写字幕、去除视频/图片背景",
+    solve: "一站式素材预处理，无需切换多个工具",
+    invoke: "/hyperframes-media"
+  },
+  {
+    name: "hyperframes-registry",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "安装和管理注册表中的模块与组件：字幕样式、VFX 效果、转场、文字特效等。",
+    usage: "运行 hyperframes add 安装模块或组件",
+    solve: "直接复用社区模块，加速视频制作",
+    invoke: "/hyperframes-registry"
+  },
+  {
+    name: "remotion-to-hyperframes",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "将 Remotion（React 视频框架）项目迁移到 HyperFrames HTML。检测不支持的模式并提供替代方案。",
+    usage: "将 Remotion 项目迁移到 HyperFrames",
+    solve: "无缝迁移 React 视频项目到更轻量的 HTML 框架",
+    invoke: "/remotion-to-hyperframes"
+  },
+  {
+    name: "waapi",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Web Animations API 适配器。element.animate()、Animation currentTime 寻址、KeyframeEffect 时序控制。",
+    usage: "在 HyperFrames 中使用原生浏览器动画",
+    solve: "确保原生 WAAPI 动画在 HyperFrames 中确定性渲染",
+    invoke: "/waapi"
+  },
+  {
+    name: "animejs",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Anime.js 适配器。注册动画到 window.__hfAnime，使 Anime.js 可寻址和确定性渲染。",
+    usage: "在 HyperFrames 中使用 Anime.js 动画",
+    solve: "让 Anime.js 时间线在渲染时精确定位到任意帧",
+    invoke: "/animejs"
+  },
+  {
+    name: "css-animations",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "CSS 动画适配器。关键帧动画、animation-delay 时序、fill-mode、play-state 控制。",
+    usage: "在 HyperFrames 中编写 CSS 关键帧动画",
+    solve: "确保 CSS 动画在 HyperFrames 预览和渲染中可寻址",
+    invoke: "/css-animations"
+  },
+  {
+    name: "gsap",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "GSAP 动画参考。gsap.to/from/fromTo、缓动、stagger、时间线、性能优化（transform、will-change）。",
+    usage: "在 HyperFrames 中使用 GSAP 动画库",
+    solve: "GSAP 高级动画能力在视频渲染管线中正确运行",
+    invoke: "/gsap"
+  },
+  {
+    name: "lottie",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Lottie/dotLottie 适配器。lottie-web JSON 动画、.lottie 文件、@lottiefiles/dotlottie-web 播放器。",
+    usage: "在 HyperFrames 中嵌入 After Effects 导出的 Lottie 动画",
+    solve: "让 AE 导出的动画资源在视频中确定性渲染",
+    invoke: "/lottie"
+  },
+  {
+    name: "three",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Three.js/WebGL 适配器。3D 场景、AnimationMixer 时间线、相机运动、着色器视觉效果。",
+    usage: "在 HyperFrames 中创建 3D 场景",
+    solve: "3D 渲染内容精确响应 HyperFrames hf-seek 事件",
+    invoke: "/three"
+  },
+  {
+    name: "tailwind",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Tailwind CSS v4.2 浏览器运行时。Tailwind 工具类、CSS-first 主题令牌、v3 vs v4 语法差异。",
+    usage: "使用 Tailwind 工具类快速编写 HyperFrames 样式",
+    solve: "提供 Tailwind v4 的正确语法和浏览器运行时配置",
+    invoke: "/tailwind"
+  },
+  {
+    name: "typegpu",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "TypeGPU/WebGPU 适配器。WGSL 片段着色器、计算管线、粒子系统、GPU 驱动画布层。",
+    usage: "在 HyperFrames 中创建 GPU 渲染内容",
+    solve: "利用 GPU 并行计算能力实现高性能视觉效果",
+    invoke: "/typegpu"
+  },
+  {
+    name: "contribute-catalog",
+    category: "hyperframes",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "为公共注册表贡献新的 HyperFrames 模块（字幕样式、VFX、转场、文字特效等）。",
+    usage: "为 HyperFrames 社区贡献模块",
+    solve: "标准化的贡献流程，确保模块质量和可复用性",
+    invoke: "/contribute-catalog"
+  },
+
+  // ===== PRE-EXISTING - 中文技能 =====
+  {
+    name: "humanizer-zh",
+    category: "preexisting",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "去除中文文本中的 AI 生成痕迹。基于维基百科 AI 写作特征指南，检测并修复 24 种 AI 写作模式：夸大的象征意义、宣传性语言、破折号过度使用、连接性短语过多等。",
+    usage: "编辑中文文本使其更自然、去除 AI 味",
+    solve: "解决中文 AI 写作的常见问题：翻译腔、模板化结构、客套话、AI 高频词汇等",
+    invoke: "/humanizer-zh"
+  },
+  {
+    name: "stock-master",
+    category: "preexisting",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "股票大师分析技能。融合信息复盘洞察力、交易系统构建力、心理情绪控制力、仓位管理力四大维度。适用于 A 股个股深度分析、大盘研判、交易策略制定、持仓评估。",
+    usage: "个股分析、大盘研判、交易策略、持仓评估",
+    solve: "提供机构级别的多维股票分析，从趋势研判到具体操作策略",
+    invoke: "/stock-master",
+    triggers: "分析股票/投资建议/大盘研判/交易策略/帮我看看这支股票"
+  },
+  {
+    name: "ad-creative",
+    category: "preexisting",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "广告创意与品牌策划。15 年经验的创意总监视角，覆盖创意概念开发、文案撰写、品牌策略、TVC 脚本、Keynote 结构。",
+    usage: "广告文案、品牌定位、营销方案、视频脚本",
+    solve: "从品牌内核出发，提供穿透力强的核心创意和精准文案",
+    invoke: "/ad-creative"
+  },
+  {
+    name: "html-slides",
+    category: "preexisting",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "HTML 幻灯片技术实现。精通 Reveal.js、Slidev、Marp 等框架，实现可交互的网页演示文稿，支持动画过渡、代码高亮、PDF 导出。",
+    usage: "创建网页版幻灯片、技术分享演示",
+    solve: "用代码构建更灵活、更精美的演示文稿，超越传统 Keynote/PPT",
+    invoke: "/html-slides"
+  },
+  {
+    name: "ppt-visual",
+    category: "preexisting",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "PPT 视觉设计技能。根据内容类型推荐最佳图表形式和页面布局，让演示文稿在视觉层面更具专业感和说服力。",
+    usage: "设计幻灯片视觉、选择图表类型、优化页面布局",
+    solve: "解决幻灯片视觉混乱、图表选型不当、信息传达低效的问题",
+    invoke: "/ppt-visual"
+  },
+  {
+    name: "presentation-builder",
+    category: "preexisting",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "演示文稿内容构建技能。专注于叙事结构、信息架构、演讲节奏设计——从核心信息提炼到逐页大纲，从故事线设计到受众分析。",
+    usage: "构建演示叙事结构、设计演讲节奏",
+    solve: "解决内容逻辑混乱、演讲节奏不当的问题，让演示更有说服力",
+    invoke: "/presentation-builder"
+  },
+  {
+    name: "remotion",
+    category: "preexisting",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "Remotion 动画参考。React 驱动的视频制作框架，用代码创建动画和视频。",
+    usage: "React 视频动画制作参考",
+    solve: "提供 Remotion 框架的使用指南和最佳实践",
+    invoke: "/remotion"
+  },
+  {
+    name: "videocut",
+    category: "preexisting",
+    tag: "video",
+    tagLabel: "视频制作",
+    desc: "视频剪辑工具技能。提供视频裁剪、拼接、转场、音频处理等视频编辑能力。",
+    usage: "视频裁剪、拼接、添加转场效果",
+    solve: "程序化视频编辑，提升视频后期效率",
+    invoke: "/videocut"
+  },
+
+  // ===== SCIENTIFIC - 生物信息学 =====
+  {
+    name: "biopython",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "Python 生物信息学工具包。序列分析、BLAST、PDB 结构处理、系统发育树、群体遗传学。",
+    usage: "DNA/RNA/蛋白质序列分析、分子结构处理",
+    solve: "用 Python 进行标准化的生物信息学分析",
+    invoke: "/biopython"
+  },
+  {
+    name: "scanpy",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "单细胞 RNA 测序分析工具包。预处理、可视化、聚类、差异表达、轨迹推断。",
+    usage: "单细胞 RNA-seq 数据分析全流程",
+    solve: "单细胞数据的标准化分析管道",
+    invoke: "/scanpy"
+  },
+  {
+    name: "scvi-tools",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "单细胞变分推断工具。概率模型（scVI、scANVI、totalVI）用于批次校正、降维、差异表达。",
+    usage: "单细胞数据的概率建模与深度学习分析",
+    solve: "深度学习驱动的单细胞分析，超越传统统计方法",
+    invoke: "/scvi-tools"
+  },
+  {
+    name: "scvelo",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "RNA 速度分析工具。从 splicing 动力学推断转录方向，预测细胞命运。",
+    usage: "单细胞 RNA 速度分析、细胞命运预测",
+    solve: "揭示单细胞转录动态变化的方向性",
+    invoke: "/scvelo"
+  },
+  {
+    name: "pysam",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "SAM/BAM/CRAM 文件处理库。读写高通量测序比对文件，操作基因组间隔。",
+    usage: "处理 BAM/SAM 比对文件、变异检出",
+    solve: "高效的 NGS 数据文件读写和基因组操作",
+    invoke: "/pysam"
+  },
+  {
+    name: "bioservices",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "40+ 生物信息学 Web 服务的 Python 统一接口。KEGG、UniProt、ChEBI、Reactome 等。",
+    usage: "程序化访问生物数据库 Web API",
+    solve: "统一接口访问数十个生物数据库，无需逐一学习 API",
+    invoke: "/bioservices"
+  },
+  {
+    name: "deeptools",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "NGS 分析工具包。BAM 转 bigWig、QC（相关性、PCA、fingerprints）、热图/谱图（TSS、peaks）。",
+    usage: "ChIP-seq、RNA-seq、ATAC-seq 可视化",
+    solve: "NGS 数据快速 QC 和可视化",
+    invoke: "/deeptools"
+  },
+  {
+    name: "anndata",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "单细胞分析注释矩阵数据结构。.h5ad 文件格式核心，与 scverse 生态集成。",
+    usage: "处理 .h5ad 文件、与 scanpy/scvi-tools 集成",
+    solve: "单细胞数据存储和交换的标准数据结构",
+    invoke: "/anndata"
+  },
+  {
+    name: "bids",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "脑成像数据结构（BIDS）标准。组织神经科学数据（MRI、EEG、MEG、PET），查询布局，验证合规，DICOM 转 BIDS。",
+    usage: "组织神经成像数据集、BIDS 合规验证",
+    solve: "神经科学数据的标准化组织和共享",
+    invoke: "/bids"
+  },
+  {
+    name: "arboreto",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "基因调控网络推断。GRNBoost2、GENIE3 算法，从基因表达数据推断转录因子-靶基因关系。",
+    usage: "从 RNA-seq 数据推断基因调控网络",
+    solve: "从表达数据重建转录调控关系",
+    invoke: "/arboreto"
+  },
+
+  // ===== SCIENTIFIC - 药物发现 =====
+  {
+    name: "rdkit",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "化学信息学工具包。分子指纹、描述符、药效团、化学反应、结构搜索、2D/3D 可视化。",
+    usage: "化学结构处理、分子描述符计算、虚拟筛选",
+    solve: "开源化学信息学的事实标准",
+    invoke: "/rdkit"
+  },
+  {
+    name: "deepchem",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "药物发现深度学习。分子性质预测、蛋白质-配体结合、QSAR 模型、分子生成。",
+    usage: "AI 驱动的分子性质预测、虚拟筛选",
+    solve: "用深度学习加速药物研发流程",
+    invoke: "/deepchem"
+  },
+  {
+    name: "datamol",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "分子数据处理。SMILES 标准化、分子清洗、结构转换、数据集管理。",
+    usage: "分子数据预处理和标准化",
+    solve: "化学数据清洗和准备的标准工具",
+    invoke: "/datamol"
+  },
+  {
+    name: "diffdock",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "扩散模型分子对接。用扩散生成模型预测蛋白质-配体结合位姿，无需要预定义结合口袋。",
+    usage: "蛋白质-配体对接、结合位姿预测",
+    solve: "不需要预知结合位点的盲对接方法",
+    invoke: "/diffdock"
+  },
+  {
+    name: "molfeat",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "分子特征化工具（100+ featurizer）。ECFP、MACCS、描述符、ChemBERTa 预训练模型。",
+    usage: "将 SMILES 转换为 ML 可用的分子特征",
+    solve: "一站式分子特征提取，支持经典和深度学习描述符",
+    invoke: "/molfeat"
+  },
+  {
+    name: "pytdc",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "治疗数据共享（TDC）。AI-ready 药物发现数据集（ADME、毒性、DTI），基准测试，分子甲骨文。",
+    usage: "药物发现 AI 数据集和基准测试",
+    solve: "统一的药物发现 AI 评估标准",
+    invoke: "/pytdc"
+  },
+  {
+    name: "medchem",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "药物化学过滤器。Lipinski 五规则、Veber 规则、PAINS 假阳性过滤器、结构警报。",
+    usage: "化合物成药性评估、假阳性过滤",
+    solve: "快速筛选化合物库，排除药物化学陷阱",
+    invoke: "/medchem"
+  },
+
+  // ===== SCIENTIFIC - 物理学 =====
+  {
+    name: "cirq",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "Google 量子计算框架。量子电路构建与模拟、NISQ 算法、量子纠错。",
+    usage: "面向 Google 量子硬件的量子算法开发",
+    solve: "可部署到 Sycamore 等 Google QPU 的量子编程",
+    invoke: "/cirq"
+  },
+  {
+    name: "qiskit",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "IBM 量子计算框架。Qiskit Runtime 生产负载、量子错误缓解、企业级量子计算。",
+    usage: "面向 IBM Quantum 硬件的量子开发",
+    solve: "IBM 量子生态的核心编程工具",
+    invoke: "/qiskit"
+  },
+  {
+    name: "pennylane",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "量子机器学习框架。自动微分量子电路、量子神经网络、量子梯度下降。",
+    usage: "量子机器学习、变分量子算法",
+    solve: "量子计算与经典 ML 的桥梁，支持多后端",
+    invoke: "/pennylane"
+  },
+  {
+    name: "qutip",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "开源量子系统模拟。Lindblad 主方程、Monte Carlo 波函数、量子光学、退相干。",
+    usage: "开放量子系统动力学模拟",
+    solve: "量子光学和开放量子系统的标准模拟工具",
+    invoke: "/qutip"
+  },
+  {
+    name: "fluidsim",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "流体动力学仿真框架。Navier-Stokes（2D/3D）、浅水方程、分层流体、湍流分析。",
+    usage: "计算流体动力学模拟、湍流研究",
+    solve: "Python 高性能流体仿真，伪谱法 FFT 加速",
+    invoke: "/fluidsim"
+  },
+  {
+    name: "pymatgen",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "材料科学工具包。晶体结构（CIF、POSCAR）、相图、能带结构、态密度、Materials Project 集成。",
+    usage: "计算材料科学、晶体结构分析",
+    solve: "材料基因组计划的核心 Python 工具",
+    invoke: "/pymatgen"
+  },
+  {
+    name: "sympy",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "Python 符号数学库。代数求解、微积分（求导/积分/极限）、矩阵运算、物理计算、代码生成。",
+    usage: "符号计算、代数推导、数学公式处理",
+    solve: "需要精确符号结果（而非数值近似）时的标准工具",
+    invoke: "/sympy"
+  },
+
+  // ===== SCIENTIFIC - ML/数据科学 =====
+  {
+    name: "scikit-learn",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "经典机器学习。分类、回归、聚类、降维、模型选择、预处理。",
+    usage: "通用机器学习建模",
+    solve: "ML 入门和基准模型的标准库",
+    invoke: "/scikit-learn"
+  },
+  {
+    name: "pytorch-lightning",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "PyTorch 训练框架。自动分布式训练、16 位精度、日志记录、checkpointing。",
+    usage: "结构化 PyTorch 模型训练",
+    solve: "消除 PyTorch 样板代码，标准化训练流程",
+    invoke: "/pytorch-lightning"
+  },
+  {
+    name: "torch-geometric",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "图神经网络库。GCN、GAT、GraphSAGE、消息传递、图分类、节点嵌入。",
+    usage: "图结构数据的深度学习",
+    solve: "图神经网络的标准实现，适合分子、社交网络等",
+    invoke: "/torch-geometric"
+  },
+  {
+    name: "torchdrug",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "药物发现深度学习平台。蛋白质结构预测、分子性质预测、药物-靶标相互作用。",
+    usage: "AI 驱动的药物发现和研究",
+    solve: "专门为药物发现定制的深度学习框架",
+    invoke: "/torchdrug"
+  },
+  {
+    name: "stable-baselines3",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "强化学习算法库。PPO、SAC、TD3、A2C、DQN 等经典 RL 算法的稳定实现。",
+    usage: "强化学习实验和基准测试",
+    solve: "经过充分测试的 RL 算法，可直接用于研究",
+    invoke: "/stable-baselines3"
+  },
+  {
+    name: "shap",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "模型可解释性工具。SHAP 值、特征重要性、瀑布图、蜂群图、力导向图。支持树模型、深度学习和黑盒模型。",
+    usage: "解释模型预测、特征重要性分析",
+    solve: "理解模型决策逻辑，发现模型偏差和公平性问题",
+    invoke: "/shap"
+  },
+  {
+    name: "umap-learn",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "UMAP 降维算法。快速非线性流形学习，用于 2D/3D 可视化、HDBSCAN 聚类预处理。",
+    usage: "高维数据可视化和降维",
+    solve: "比 t-SNE 更快，保留更多全局结构的降维方法",
+    invoke: "/umap-learn"
+  },
+  {
+    name: "pymc",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "贝叶斯建模。层次模型、MCMC（NUTS）、变分推断、LOO/WAIC 模型比较、后验检验。",
+    usage: "概率编程和贝叶斯统计建模",
+    solve: "灵活的贝叶斯推断框架，从简单回归到复杂层次模型",
+    invoke: "/pymc"
+  },
+  {
+    name: "polars",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "高性能 DataFrame 库。惰性求值、零拷贝、SIMD 加速。比 pandas 更快的内存数据处理。",
+    usage: "高性能表格数据处理",
+    solve: "pandas 的现代替代品，性能提升 5-10 倍",
+    invoke: "/polars"
+  },
+  {
+    name: "dask",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "分布式计算框架。突破内存限制的并行 pandas/NumPy，支持集群上的分布式 ML。",
+    usage: "超内存大小数据处理、并行分析",
+    solve: "无需学习新 API 即可将 pandas/numpy 扩展到 TB 级",
+    invoke: "/dask"
+  },
+  {
+    name: "vaex",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "大数据（数十亿行）的懒加载 DataFrame 工具。内存外计算、快速聚合、高效可视化。",
+    usage: "处理远超内存容量的表格数据集",
+    solve: "在单机上处理数十亿行数据，内存外计算",
+    invoke: "/vaex"
+  },
+
+  // ===== SCIENTIFIC - 学术/写作 =====
+  {
+    name: "scientific-writing",
+    category: "scientific",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "科学写作辅助。学术风格、清晰论证、结构化撰写、期刊要求匹配。",
+    usage: "撰写科学论文、实验报告",
+    solve: "提升科学写作的学术规范性",
+    invoke: "/scientific-writing"
+  },
+  {
+    name: "scientific-visualization",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "科学可视化。出版级图表、配色方案、多面板布局、格式要求。基于 matplotlib 的专业图表。",
+    usage: "创建符合期刊要求的科学图表",
+    solve: "避免低质量图表被退稿，确保图表的专业性和一致性",
+    invoke: "/scientific-visualization"
+  },
+  {
+    name: "scientific-schematics",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "出版级科学示意图创建。使用 Nano Banana 2 AI 生成，Gemini 3.1 Pro 质量审查。神经网络架构、系统图、流程图、生物通路。",
+    usage: "创建高质量科学示意图和图示摘要",
+    solve: "无需设计技能即可生成出版级图表",
+    invoke: "/scientific-schematics"
+  },
+  {
+    name: "peer-review",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "专业学术同行评审。结构化审稿、方法论评估、统计审查、利益冲突检测。",
+    usage: "撰写同行评审报告、回复审稿意见",
+    solve: "系统化的审稿方法，确保审稿质量和完整性",
+    invoke: "/peer-review"
+  },
+  {
+    name: "citation-management",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "引文管理。搜索 Google Scholar 和 PubMed，提取元数据，验证引文，生成 BibTeX。",
+    usage: "查找论文、验证引用信息、生成 BibTeX",
+    solve: "确保参考文献的准确性和完整度",
+    invoke: "/citation-management"
+  },
+  {
+    name: "literature-review",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "文献综述工具。系统化检索、筛选、整理研究文献，提取关键发现。",
+    usage: "系统性文献回顾和研究差距分析",
+    solve: "结构化的文献调研方法，避免遗漏关键研究",
+    invoke: "/literature-review"
+  },
+  {
+    name: "hypothesis-generation",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "假设生成。从数据中自动生成可检验的科学假设，识别候选机制和通路。",
+    usage: "从实验数据中生成科学假设",
+    solve: "帮助从大量数据中发现潜在的研究方向",
+    invoke: "/hypothesis-generation"
+  },
+  {
+    name: "scientific-critical-thinking",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "科学论断和证据质量评估。实验设计有效性、偏倚识别、GRADE 证据分级、Cochrane 偏倚风险评估。",
+    usage: "评估科学声明的可靠性",
+    solve: "培养批判性思维，识别有缺陷的研究和虚假论断",
+    invoke: "/scientific-critical-thinking"
+  },
+  {
+    name: "exploratory-data-analysis",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "科学数据探索性分析。200+ 文件格式自动检测，质量指标，下游分析建议。化学、生物信息学、显微镜、光谱学。",
+    usage: "分析任何科学数据文件的结构和质量",
+    solve: "初次接触数据集时快速理解其内容和质量",
+    invoke: "/exploratory-data-analysis"
+  },
+  {
+    name: "database-lookup",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "78 个公共科学/生物医学/材料科学/经济数据库 REST API 查询。药物、基因、蛋白质、通路、变体、临床试验、专利。",
+    usage: "查询化合物、基因、蛋白质、临床试验等公共数据",
+    solve: "统一接口访问 78 个数据库，无需逐一学习",
+    invoke: "/database-lookup"
+  },
+  {
+    name: "exa-search",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "Exa 驱动的学术网页搜索。语义搜索、学术域名过滤、研究论文类别优先。",
+    usage: "科学和技术内容的网络搜索",
+    solve: "更精准的学术搜索，过滤掉非学术内容",
+    invoke: "/exa-search"
+  },
+  {
+    name: "parallel-web",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "全功能网页工具包。优先检索同行评审论文、预印本和学术数据库。支持网页搜索、URL 提取、批量数据增强和深度研究报告。",
+    usage: "任何网页搜索、页面抓取、数据集增强",
+    solve: "以学术源为主的智能网络搜索",
+    invoke: "/parallel-web"
+  },
+  {
+    name: "paper-lookup",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "学术论文查找。通过 DOI、标题、作者等多维度检索论文元数据和全文链接。",
+    usage: "按 DOI/标题/作者查找论文",
+    solve: "快速定位和获取学术论文",
+    invoke: "/paper-lookup"
+  },
+
+  // ===== DOCUMENT TOOLS =====
+  {
+    name: "pdf",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "PDF 全能处理器。读取/提取文本和表格，合并/拆分，旋转页面，加水印，创建新 PDF，填写表单，加密/解密，OCR。",
+    usage: "任何 PDF 相关操作",
+    solve: "一站式 PDF 处理，从提取到创建到修改",
+    invoke: "/pdf"
+  },
+  {
+    name: "docx",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "Word 文档处理。创建、读取、编辑 .docx 文件，样式管理、表格处理、批注、修订追踪。",
+    usage: "程序化创建和修改 Word 文档",
+    solve: "自动化 Word 文档生成和处理",
+    invoke: "/docx"
+  },
+  {
+    name: "xlsx",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "电子表格全能工具。读写/编辑 .xlsx/.csv/.tsv，公式计算、格式化、图表、数据清洗。",
+    usage: "任何需要生成或处理电子表格的任务",
+    solve: "程序化创建和操作 Excel 文件",
+    invoke: "/xlsx"
+  },
+  {
+    name: "pptx",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "PowerPoint 文档处理。创建/编辑 .pptx 文件，幻灯片排版、图表嵌入、母版管理。",
+    usage: "程序化创建和编辑 PPT",
+    solve: "自动化 PPT 制作，批量生成演示文稿",
+    invoke: "/pptx"
+  },
+  {
+    name: "markitdown",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "文件格式转换器。PDF、DOCX、PPTX、XLSX、图片（OCR）、音频（转录）、HTML、CSV、JSON、XML、ZIP、YouTube 链接 → Markdown。",
+    usage: "任何文档转 Markdown",
+    solve: "一个命令将任何格式转为纯文本，方便 AI 处理",
+    invoke: "/markitdown"
+  },
+
+  // ===== SCIENTIFIC - 医疗 =====
+  {
+    name: "pydicom",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "DICOM 医学影像处理。读取/写入/修改 DICOM 文件，提取像素数据（CT/MRI/X 光/超声），匿名化，格式转换。",
+    usage: "医学影像数据处理和分析",
+    solve: "医疗成像数据的标准 Python 处理工具",
+    invoke: "/pydicom"
+  },
+  {
+    name: "pyhealth",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "医疗 AI 工具包。EHR 数据处理、疾病预测、药物推荐、住院预测、深度学习医疗模型。",
+    usage: "电子健康记录分析和预测建模",
+    solve: "医疗数据的深度学习建模一站式平台",
+    invoke: "/pyhealth"
+  },
+  {
+    name: "clinical-decision-support",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "临床决策支持。循证指南查询、鉴别诊断、治疗方案推荐、风险评分。",
+    usage: "临床决策辅助",
+    solve: "提供基于最新证据的临床决策支持",
+    invoke: "/clinical-decision-support"
+  },
+  {
+    name: "clinical-reports",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "临床报告生成。结构化病史、检查报告、诊断报告、出院小结的自动生成。",
+    usage: "自动生成各类临床报告",
+    solve: "标准化和自动化医疗文档生成",
+    invoke: "/clinical-reports"
+  },
+  {
+    name: "histolab",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "病理全切片图像（WSI）处理。组织检测、tile 提取、H&E 染色归一化。",
+    usage: "病理切片预处理和特征提取",
+    solve: "数字病理图像的标准预处理管道",
+    invoke: "/histolab"
+  },
+  {
+    name: "pathml",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "计算病理学工具包。多组学分析、空间蛋白质组学、多重成像、深度学习病理模型。",
+    usage: "高级计算病理学分析",
+    solve: "整合分子和影像数据的下一代病理学分析",
+    invoke: "/pathml"
+  },
+  {
+    name: "iso-13485-certification",
+    category: "scientific",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "ISO 13485 医疗器械 QMS 认证全套文档准备。差距分析、质量手册、程序文件、医疗器械主文档。",
+    usage: "准备 ISO 13485 质量管理体系认证文档",
+    solve: "自动化医疗器械法规合规文档的生成和管理",
+    invoke: "/iso-13485-certification"
+  },
+
+  // ===== MORE TOOLS =====
+  {
+    name: "consciousness-council",
+    category: "preexisting",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "多视角思维议会。为任何问题、决策或创意挑战组织多角度讨论。召集不同领域的专家视角进行 deliberation。",
+    usage: "多视角思考、复杂决策、魔鬼代言人分析",
+    solve: "突破思维盲区，获得全方位的观点和建议",
+    invoke: "/consciousness-council"
+  },
+  {
+    name: "what-if-oracle",
+    category: "preexisting",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "假设推演分析。探索可能的情景、分析连锁反应、评估风险和机会。",
+    usage: "情景分析、风险评估、战略推演",
+    solve: "系统化的假设思维工具，辅助重大决策",
+    invoke: "/what-if-oracle"
+  },
+  {
+    name: "generate-image",
+    category: "preexisting",
+    tag: "tool",
+    tagLabel: "实用工具",
+    desc: "AI 图片生成。支持多种模型和风格的艺术创作、插图生成、概念可视化。",
+    usage: "AI 艺术创作、概念图生成",
+    solve: "快速将想法转化为视觉内容",
+    invoke: "/generate-image"
+  },
+  {
+    name: "statistical-analysis",
+    category: "scientific",
+    tag: "science",
+    tagLabel: "科研计算",
+    desc: "统计分析方法论。描述性统计、假设检验、回归分析、方差分析、非参数检验。",
+    usage: "选择和应用统计方法",
+    solve: "避免统计方法误用，选择正确的检验方法",
+    invoke: "/statistical-analysis"
+  },
+  {
+    name: "research-lookup",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "研究信息聚合查询。自动路由到 parallel-cli（快速网页搜索）、Parallel Chat API（深度研究）或 Perplexity（学术搜索）。",
+    usage: "查找论文、收集研究数据、验证科学信息",
+    solve: "智能路由选择最佳后端，确保信息来源质量",
+    invoke: "/research-lookup"
+  },
+  {
+    name: "market-research-reports",
+    category: "preexisting",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "市场研究报告生成。行业分析、竞争格局、市场规模、趋势预测。",
+    usage: "行业分析、市场竞争研究",
+    solve: "结构化的市场研究框架",
+    invoke: "/market-research-reports"
+  },
+  {
+    name: "infographics",
+    category: "preexisting",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "信息图设计。数据可视化叙事、图表排版、视觉层次、色彩方案。",
+    usage: "创建信息图表和数据可视化",
+    solve: "将复杂数据转化为直观易懂的视觉叙事",
+    invoke: "/infographics"
+  },
+  {
+    name: "research-grants",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "科研基金申请辅助。申请书撰写、预算编制、研究计划、影响力陈述。",
+    usage: "撰写科研基金申请书",
+    solve: "提高基金申请成功率的结构化方法",
+    invoke: "/research-grants"
+  },
+  {
+    name: "scientific-slides",
+    category: "scientific",
+    tag: "writing",
+    tagLabel: "中文写作",
+    desc: "科学演讲幻灯片设计。学术汇报结构、图表编排、LaTeX 公式、参考文献格式。",
+    usage: "学术会议演讲幻灯片制作",
+    solve: "提升学术演示的专业性和视觉质量",
+    invoke: "/scientific-slides"
+  },
+  {
+    name: "open-notebook",
+    category: "scientific",
+    tag: "research",
+    tagLabel: "学术研究",
+    desc: "开放科学实验记录。版本化实验记录、数据追溯、方法共享。",
+    usage: "科学实验记录的开放管理",
+    solve: "实现可复现研究的实验记录标准",
+    invoke: "/open-notebook"
+  }
+];
+
+// Add more scientific skills list
+const moreScientific = [
+  "adaptyv","aeon","astropy","autoskill","benchling-integration","bgpt-paper-search","cellxgene-census",
+  "cobrapy","depmap","dhdna-profiler","dnanexus-integration","esm","etetoolkit","flowio",
+  "geniml","geomaster","geopandas","get-available-resources","gget","ginkgo-cloud-lab",
+  "glycoengineering","gtars","hugging-science","hypogenic","imaging-data-commons",
+  "labarchive-integration","lamindb","latchbio-integration","latex-posters","matchms","matlab",
+  "matplotlib","modal","molecular-dynamics","networkx","neurokit2","neuropixels-analysis",
+  "omero-integration","opentrons-integration","optimize-for-gpu","pacsomatic","paperzilla",
+  "phylogenetics","polars-bio","pptx-posters","primekg","protocolsio-integration",
+  "pufferlib","pydeseq2","pylabrobot","pymoo","pyopenms","pyzotero","rowan",
+  "scikit-bio","scikit-survival","scvelo","seaborn","simpy","statsmodels",
+  "tiledbvcf","timesfm-forecasting","transformers","treatment-plans","usfiscaldata","venue-templates",
+  "zarr-python"
+];
+
+moreScientific.forEach(name => {
+  skills.push({
+    name: name, category: "scientific", tag: "science", tagLabel: "科研计算",
+    desc: "科研计算与分析技能", usage: "科学研究和数据分析", solve: "提供专业的科研计算能力", invoke: "/" + name
+  });
+});
+
+// ===== RENDER =====
+let currentTheme = 'light';
+let activeCategory = 'all';
+let searchQuery = '';
+
+const categoryMap = {
+  all: { label: '全部', count: skills.length },
+  academic: { label: '学术研究', count: 0 },
+  superpowers: { label: '开发工作流', count: 0 },
+  hyperframes: { label: '视频制作', count: 0 },
+  scientific: { label: '科研计算', count: 0 },
+  preexisting: { label: '中文/工具', count: 0 }
+};
+
+skills.forEach(s => {
+  if (categoryMap[s.category]) categoryMap[s.category].count++;
+});
+
+function renderStats() {
+  const total = skills.length;
+  const academic = skills.filter(s => s.category === 'academic').length;
+  const superpowers = skills.filter(s => s.category === 'superpowers').length;
+  const hyperframes = skills.filter(s => s.category === 'hyperframes').length;
+  const scientific = skills.filter(s => s.category === 'scientific').length;
+  const preexisting = skills.filter(s => s.category === 'preexisting').length;
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">技能总数</div></div>
+    <div class="stat"><div class="stat-num">${scientific}</div><div class="stat-label">科研计算</div></div>
+    <div class="stat"><div class="stat-num">${academic + superpowers}</div><div class="stat-label">学术 + 工作流</div></div>
+    <div class="stat"><div class="stat-num">${hyperframes}</div><div class="stat-label">视频制作</div></div>
+    <div class="stat"><div class="stat-num">${preexisting}</div><div class="stat-label">中文 / 工具</div></div>
+  `;
+  document.getElementById('totalCount').textContent = total;
+}
+
+function renderCategories() {
+  const html = Object.entries(categoryMap).map(([key, val]) =>
+    `<button class="cat-btn${activeCategory===key?' active':''}" onclick="filterCategory('${key}')">
+      ${val.label} <span class="cat-count">${val.count}</span>
+    </button>`
+  ).join('');
+  document.getElementById('categoryFilters').innerHTML = html;
+}
+
+function getFilteredSkills() {
+  return skills.filter(s => {
+    const catMatch = activeCategory === 'all' || s.category === activeCategory;
+    const q = searchQuery.toLowerCase();
+    const searchMatch = !q || s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || (s.usage||'').toLowerCase().includes(q) || (s.solve||'').toLowerCase().includes(q);
+    return catMatch && searchMatch;
+  });
+}
+
+function renderSkills() {
+  const filtered = getFilteredSkills();
+  const grid = document.getElementById('skillsGrid');
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">&#x1F50E;</div>
+      <h3>没有找到匹配的技能</h3>
+      <p>尝试不同的搜索词或切换分类</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map((s, i) =>
+    `<div class="skill-card" style="animation-delay:${i*0.02}s" onclick="openModal('${s.name}')">
+      <div class="skill-header">
+        <span class="skill-name">${s.name}</span>
+        <span class="skill-tag tag-${s.tag}">${s.tagLabel}</span>
+      </div>
+      <div class="skill-desc">${s.desc}</div>
+      <div class="skill-invoke">${s.invoke}</div>
+    </div>`
+  ).join('');
+}
+
+function filterCategory(cat) {
+  activeCategory = cat;
+  renderCategories();
+  renderSkills();
+}
+
+function openModal(name) {
+  const s = skills.find(x => x.name === name);
+  if (!s) return;
+
+  let html = `
+    <div class="modal-header">
+      <span class="modal-title">${s.name}</span>
+      <button class="modal-close" onclick="closeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <span class="skill-tag tag-${s.tag}" style="margin-bottom:12px;display:inline-block;">${s.tagLabel}</span>
+        <p style="margin-top:8px;">${s.desc}</p>
+      </div>
+      <div class="modal-section">
+        <h4>调用方式</h4>
+        <p><code>${s.invoke}</code></p>
+        ${s.triggers ? `<p style="margin-top:8px;"><strong>触发词：</strong>${s.triggers}</p>` : ''}
+        ${s.modes ? `<p style="margin-top:8px;"><strong>可用模式：</strong>${s.modes}</p>` : ''}
+      </div>
+      <div class="modal-section">
+        <h4>使用场景</h4>
+        <p>${s.usage}</p>
+      </div>
+      <div class="modal-section">
+        <h4>解决的问题</h4>
+        <p>${s.solve}</p>
+      </div>
+    </div>`;
+
+  document.getElementById('modal').innerHTML = html;
+  document.getElementById('modalOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  document.getElementById('themeToggle').textContent = currentTheme === 'light' ? '☾' : '☀';
+  localStorage.setItem('skills-catalog-theme', currentTheme);
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('skills-catalog-theme');
+  if (saved === 'dark') {
+    currentTheme = 'dark';
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeToggle').textContent = '☀';
+  }
+  renderStats();
+  renderCategories();
+  renderSkills();
+
+  document.getElementById('searchInput').addEventListener('input', e => {
+    searchQuery = e.target.value;
+    renderSkills();
+  });
+  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      document.getElementById('searchInput').focus();
+    }
+  });
+});
+</script>
+<script>
+// ===== PARTICLE SYSTEM =====
+(function() {
+  const canvas = document.getElementById('particleCanvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  let sparkles = [];
+  let mouse = { x: -1000, y: -1000, r: 150 };
+  let w, h;
+  const PARTICLE_COUNT = 130;
+  const CONNECTION_DIST = 160;
+  const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * h; // start anywhere
+      this.x = Math.random() * w;
+    }
+    reset() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.vx = (Math.random() - 0.5) * 0.4;
+      this.vy = (Math.random() - 0.5) * 0.4;
+      this.r = Math.random() * 2.5 + 1;
+      this.opacity = Math.random() * 0.5 + 0.15;
+      this.wobble = Math.random() * Math.PI * 2;
+      this.wobbleSpeed = (Math.random() - 0.5) * 0.01;
+      this.wobbleAmp = Math.random() * 0.4;
+      this.hue = [220, 260, 290, 330][Math.floor(Math.random() * 4)]; // blue, purple, pink
+    }
+    update() {
+      this.wobble += this.wobbleSpeed;
+      this.x += this.vx + Math.sin(this.wobble) * this.wobbleAmp;
+      this.y += this.vy + Math.cos(this.wobble * 0.7) * this.wobbleAmp;
+
+      // Mouse repulsion / attraction
+      const dx = mouse.x - this.x;
+      const dy = mouse.y - this.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < mouse.r) {
+        const force = (mouse.r - dist) / mouse.r;
+        const angle = Math.atan2(dy, dx);
+        this.x -= Math.cos(angle) * force * 1.2;
+        this.y -= Math.sin(angle) * force * 1.2;
+      }
+
+      // Wrap around edges
+      if (this.x < -20) this.x = w + 20;
+      if (this.x > w + 20) this.x = -20;
+      if (this.y < -20) this.y = h + 20;
+      if (this.y > h + 20) this.y = -20;
+    }
+    draw(ctx) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      const alpha = isDark() ? this.opacity * 0.7 : this.opacity;
+      ctx.fillStyle = `hsla(${this.hue}, 60%, ${isDark() ? 70 : 50}%, ${alpha})`;
+      ctx.fill();
+    }
+  }
+
+  function init() {
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function drawConnections() {
+    const alpha = isDark() ? 0.06 : 0.08;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < CONNECTION_DIST) {
+          const opacity = (1 - dist / CONNECTION_DIST) * alpha;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(${isDark() ? '180,180,220' : '120,130,200'}, ${opacity})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  class ShockRing {
+    constructor(x, y) {
+      this.x = x; this.y = y;
+      this.r = 2; this.maxR = 80 + Math.random() * 40;
+      this.life = 1; this.decay = 0.025;
+    }
+    update() { this.r += (this.maxR - this.r) * 0.15; this.life -= this.decay; }
+    draw(ctx) {
+      const alpha = this.life * 0.3;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${isDark() ? '180,160,240' : '140,120,210'}, ${alpha})`;
+      ctx.lineWidth = 1.5 * this.life;
+      ctx.stroke();
+    }
+    get dead() { return this.life <= 0; }
+  }
+
+  let shockRings = [];
+
+  class Sparkle {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 4 + 2;
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.r = Math.random() * 3 + 1.5;
+      this.life = 1;
+      this.decay = Math.random() * 0.015 + 0.008;
+      this.hue = [200, 240, 280, 320, 340][Math.floor(Math.random() * 5)];
+      this.gravity = 0.04;
+      this.friction = 0.98;
+    }
+    update() {
+      this.vx *= this.friction;
+      this.vy *= this.friction;
+      this.vy += this.gravity;
+      this.x += this.vx;
+      this.y += this.vy;
+      this.life -= this.decay;
+      this.r *= 0.995;
+    }
+    draw(ctx) {
+      const alpha = this.life * 0.8;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 80%, ${isDark() ? 75 : 55}%, ${alpha})`;
+      ctx.fill();
+      // Outer glow
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${this.hue}, 70%, ${isDark() ? 70 : 50}%, ${alpha * 0.15})`;
+      ctx.fill();
+    }
+    get dead() { return this.life <= 0; }
+  }
+
+  function spawnExplosion(x, y, count) {
+    for (let i = 0; i < count; i++) {
+      sparkles.push(new Sparkle(x, y));
+    }
+    shockRings.push(new ShockRing(x, y));
+  }
+
+  function drawMouseGlow() {
+    if (mouse.x < -500) return;
+    const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.r);
+    const hue = isDark() ? '160,180,255' : '120,130,220';
+    gradient.addColorStop(0, `rgba(${hue}, 0.06)`);
+    gradient.addColorStop(0.5, `rgba(${hue}, 0.03)`);
+    gradient.addColorStop(1, `rgba(${hue}, 0)`);
+    ctx.fillStyle = gradient;
+    ctx.fillRect(mouse.x - mouse.r, mouse.y - mouse.r, mouse.r * 2, mouse.r * 2);
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, w, h);
+    drawMouseGlow();
+    drawConnections();
+    particles.forEach(p => { p.update(); p.draw(ctx); });
+    sparkles.forEach(s => { s.update(); s.draw(ctx); });
+    shockRings.forEach(r => { r.update(); r.draw(ctx); });
+    sparkles = sparkles.filter(s => !s.dead);
+    shockRings = shockRings.filter(r => !r.dead);
+    requestAnimationFrame(animate);
+  }
+
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+  document.addEventListener('mouseleave', () => { mouse.x = -1000; mouse.y = -1000; });
+
+  // Click explosion (skip interactive elements)
+  document.addEventListener('click', e => {
+    if (e.target.closest('.skill-card, .cat-btn, button, input, .modal-overlay')) return;
+    spawnExplosion(e.clientX, e.clientY, 25 + Math.floor(Math.random() * 15));
+  });
+
+  // Touch support
+  document.addEventListener('touchmove', e => {
+    mouse.x = e.touches[0].clientX;
+    mouse.y = e.touches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    if (e.changedTouches.length === 1 && !e.target.closest('.skill-card, .cat-btn, button, input')) {
+      const t = e.changedTouches[0];
+      spawnExplosion(t.clientX, t.clientY, 20);
+    }
+    mouse.x = -1000; mouse.y = -1000;
+  });
+
+  // Re-init particles on theme change
+  const observer = new MutationObserver(() => { init(); });
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  resize();
+  init();
+  animate();
+})();
+</script>
+</body>
+</html>
